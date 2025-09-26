@@ -1,0 +1,298 @@
+{% extends "base.html" %} {% block title %}Movie Recommendations - {{ sentiment
+}} {{ language }} Movies{% endblock %} {% block content %}
+<div class="results-section">
+  <div class="results-header">
+    <h1 class="results-title">
+      <i class="fas fa-star"></i>
+      Your Perfect Movie Match
+    </h1>
+    <div class="results-meta">
+      <div class="meta-badge">
+        <i class="fas fa-heart"></i>
+        <span>{{ sentiment }} Mood</span>
+      </div>
+      <div class="meta-badge">
+        <i class="fas fa-globe"></i>
+        <span>{{ language }} Cinema</span>
+      </div>
+      <div class="meta-badge">
+        <i class="fas fa-film"></i>
+        <span>{{ movies|length }} Movies Found</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Table Controls -->
+  <div class="table-controls">
+    <div class="controls-group">
+      <span class="controls-label">
+        <i class="fas fa-sort"></i>
+        Sort By:
+      </span>
+      <button class="sort-btn" data-sort="title">
+        <i class="fas fa-sort"></i>
+        Title
+      </button>
+      <button class="sort-btn" data-sort="rating">
+        <i class="fas fa-sort"></i>
+        Rating
+      </button>
+      <button class="sort-btn" data-sort="popularity">
+        <i class="fas fa-sort"></i>
+        Popularity
+      </button>
+    </div>
+
+    <div class="controls-group">
+      <a href="/" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i>
+        New Search
+      </a>
+    </div>
+  </div>
+
+  <!-- Movies Table -->
+  <div class="table-container">
+    <table class="movies-table">
+      <thead>
+        <tr>
+          <th>
+            <i class="fas fa-film"></i>
+            Movie Title
+          </th>
+          <th>
+            <i class="fas fa-star"></i>
+            Rating
+          </th>
+          <th>
+            <i class="fas fa-align-left"></i>
+            Summary
+          </th>
+          <th>
+            <i class="fas fa-fire"></i>
+            Popularity
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for movie in movies %}
+        <tr>
+          <td>
+            <div class="movie-title">{{ movie.title }}</div>
+          </td>
+          <td>
+            <div class="movie-rating">
+              <i class="fas fa-star"></i>
+              {{ movie.rating if movie.rating != 'N/A' else '⭐' }}
+            </div>
+          </td>
+          <td>
+            <div class="movie-summary">
+              {{ movie.summary if movie.summary != 'N/A' else 'A captivating
+              movie experience awaits you with this carefully selected film.' }}
+            </div>
+          </td>
+          <td>
+            <div class="movie-popularity">
+              <i class="fas fa-users"></i>
+              {{ movie.popularity if movie.popularity != 'N/A' else 'Popular' }}
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Action Buttons -->
+  <div
+    style="
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      margin-top: 2rem;
+      flex-wrap: wrap;
+    "
+  >
+    <a href="/" class="btn btn-primary">
+      <i class="fas fa-search"></i>
+      Find More Movies
+    </a>
+    <button onclick="window.print()" class="btn btn-secondary">
+      <i class="fas fa-print"></i>
+      Save Results
+    </button>
+    <button
+      onclick="navigator.share ? navigator.share({title: 'My Movie Recommendations', text: 'Check out these amazing {{ sentiment }} movies in {{ language }}!', url: window.location.href}) : window.movieUI.showToast('Sharing not supported on this device', 'info')"
+      class="btn btn-secondary"
+    >
+      <i class="fas fa-share-alt"></i>
+      Share
+    </button>
+  </div>
+</div>
+
+<!-- Enhanced Results Stats -->
+<div
+  class="stats-section"
+  style="
+    margin-top: 3rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    max-width: 800px;
+    width: 100%;
+  "
+>
+  <div
+    class="stat-card glass-effect"
+    style="padding: 1.5rem; border-radius: 1rem; text-align: center"
+  >
+    <div style="font-size: 2rem; color: #4facfe; margin-bottom: 0.5rem">
+      <i class="fas fa-trophy"></i>
+    </div>
+    <div
+      style="
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: rgba(255, 255, 255, 0.9);
+        margin-bottom: 0.25rem;
+      "
+    >
+      {% set high_rated = movies | selectattr('rating', 'ne', 'N/A') |
+      selectattr('rating', '>', '7.0') | list %} {{ high_rated | length }}
+    </div>
+    <div style="font-size: 0.9rem; color: rgba(255, 255, 255, 0.7)">
+      High Rated (7.0+)
+    </div>
+  </div>
+
+  <div
+    class="stat-card glass-effect"
+    style="padding: 1.5rem; border-radius: 1rem; text-align: center"
+  >
+    <div style="font-size: 2rem; color: #f093fb; margin-bottom: 0.5rem">
+      <i class="fas fa-heart"></i>
+    </div>
+    <div
+      style="
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: rgba(255, 255, 255, 0.9);
+        margin-bottom: 0.25rem;
+      "
+    >
+      100%
+    </div>
+    <div style="font-size: 0.9rem; color: rgba(255, 255, 255, 0.7)">
+      Mood Match
+    </div>
+  </div>
+
+  <div
+    class="stat-card glass-effect"
+    style="padding: 1.5rem; border-radius: 1rem; text-align: center"
+  >
+    <div style="font-size: 2rem; color: #81ffb8; margin-bottom: 0.5rem">
+      <i class="fas fa-clock"></i>
+    </div>
+    <div
+      style="
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: rgba(255, 255, 255, 0.9);
+        margin-bottom: 0.25rem;
+      "
+    >
+      Real-time
+    </div>
+    <div style="font-size: 0.9rem; color: rgba(255, 255, 255, 0.7)">
+      Fresh Data
+    </div>
+  </div>
+
+  <div
+    class="stat-card glass-effect"
+    style="padding: 1.5rem; border-radius: 1rem; text-align: center"
+  >
+    <div style="font-size: 2rem; color: #ffeaa7; margin-bottom: 0.5rem">
+      <i class="fas fa-language"></i>
+    </div>
+    <div
+      style="
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: rgba(255, 255, 255, 0.9);
+        margin-bottom: 0.25rem;
+      "
+    >
+      {{ language }}
+    </div>
+    <div style="font-size: 0.9rem; color: rgba(255, 255, 255, 0.7)">Cinema</div>
+  </div>
+</div>
+
+<style>
+  .stat-card {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .stat-card:hover {
+    transform: translateY(-8px) scale(1.05);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
+  }
+
+  @media print {
+    .btn,
+    .table-controls,
+    .stats-section {
+      display: none !important;
+    }
+
+    .movies-table {
+      border: 1px solid #333 !important;
+    }
+
+    .movies-table th,
+    .movies-table td {
+      border: 1px solid #333 !important;
+      color: #333 !important;
+    }
+  }
+</style>
+{% endblock %} {% block scripts %}
+<script>
+  // Initialize sorting on page load
+  document.addEventListener("DOMContentLoaded", function () {
+    // Show success message
+    setTimeout(() => {
+      window.movieUI.showToast(
+        "{{ movies|length }} movies found for {{ sentiment }} mood in {{ language }}!",
+        "success",
+        4000
+      );
+    }, 500);
+
+    // Add enhanced table interactions
+    const rows = document.querySelectorAll(".movies-table tbody tr");
+    rows.forEach((row, index) => {
+      // Add data attributes for advanced sorting
+      const title = row.querySelector(".movie-title").textContent.trim();
+      const rating =
+        row.querySelector(".movie-rating").textContent.replace(/[^\d.]/g, "") ||
+        "0";
+      const popularity =
+        row
+          .querySelector(".movie-popularity")
+          .textContent.replace(/[^\d,]/g, "") || "0";
+
+      row.setAttribute("data-title", title.toLowerCase());
+      row.setAttribute("data-rating", rating);
+      row.setAttribute("data-popularity", popularity.replace(/,/g, ""));
+
+      // Stagger entrance animations
+      row.style.animationDelay = `${index * 0.1}s`;
+    });
+  });
+</script>
+{% endblock %}
