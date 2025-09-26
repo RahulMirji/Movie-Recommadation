@@ -12,9 +12,13 @@ OMDB_BASE_URL = "http://www.omdbapi.com/"
 
 # Check if API key is loaded
 if not OMDB_API_KEY:
-    raise ValueError("OMDB_API_KEY not found in environment variables. Please check your .env file.")
+    raise ValueError("OMDB_API_KEY not found in environment variables. Please check your .env file or set it in your deployment platform.")
 
 app = Flask(__name__)
+
+# Configure Flask for production
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'your-secret-key-change-in-production')
+app.config['DEBUG'] = os.getenv('FLASK_ENV') != 'production'
 
 # Movie database organized by mood and language
 def get_movie_titles_by_mood_and_language(mood, language):
@@ -201,6 +205,11 @@ def api_recommendations():
     
     return jsonify(recommendations)
 
+# Health check endpoint for Render
+@app.route('/health')
+def health_check():
+    return jsonify({"status": "healthy", "service": "movie-recommender"}), 200
+
 # Error handlers
 @app.errorhandler(404)
 def not_found_error(error):
@@ -211,4 +220,7 @@ def internal_error(error):
     return render_template('500.html'), 500
 
 if __name__ == "__main__":
-    app.run(host='127.0.0.1', port=5000, debug=True)
+    # For local development only
+    port = int(os.getenv('PORT', 5000))
+    debug = os.getenv('FLASK_ENV') != 'production'
+    app.run(host='0.0.0.0', port=port, debug=debug)
