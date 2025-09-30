@@ -298,6 +298,82 @@ class MovieRecommendationUI {
         });
     }
 
+    // ===============================
+    // SHARE FUNCTIONALITY
+    // ===============================
+
+    async shareResults(title, text, url) {
+        // Try native share API first
+        if (navigator.share) {
+            try {
+                await navigator.share({
+                    title: title,
+                    text: text,
+                    url: url
+                });
+                this.showToast('Shared successfully!', 'success');
+                return;
+            } catch (err) {
+                if (err.name !== 'AbortError') {
+                    console.log('Share failed:', err);
+                }
+            }
+        }
+
+        // Fallback: Copy to clipboard
+        this.copyToClipboard(url);
+    }
+
+    async copyToClipboard(text) {
+        try {
+            await navigator.clipboard.writeText(text);
+            this.showToast('Link copied to clipboard! 📋', 'success');
+        } catch (err) {
+            // Fallback for older browsers
+            const textArea = document.createElement('textarea');
+            textArea.value = text;
+            textArea.style.position = 'fixed';
+            textArea.style.left = '-999999px';
+            document.body.appendChild(textArea);
+            textArea.select();
+            try {
+                document.execCommand('copy');
+                this.showToast('Link copied to clipboard! 📋', 'success');
+            } catch (err) {
+                this.showToast('Failed to copy link', 'error');
+            }
+            document.body.removeChild(textArea);
+        }
+    }
+
+    openSocialShare(platform, url, text) {
+        let shareUrl = '';
+        const encodedUrl = encodeURIComponent(url);
+        const encodedText = encodeURIComponent(text);
+
+        switch (platform) {
+            case 'twitter':
+                shareUrl = `https://twitter.com/intent/tweet?url=${encodedUrl}&text=${encodedText}`;
+                break;
+            case 'facebook':
+                shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`;
+                break;
+            case 'whatsapp':
+                shareUrl = `https://wa.me/?text=${encodedText}%20${encodedUrl}`;
+                break;
+            case 'linkedin':
+                shareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}`;
+                break;
+            case 'telegram':
+                shareUrl = `https://t.me/share/url?url=${encodedUrl}&text=${encodedText}`;
+                break;
+        }
+
+        if (shareUrl) {
+            window.open(shareUrl, '_blank', 'width=600,height=400');
+        }
+    }
+
     createParticleEffect(element) {
         const rect = element.getBoundingClientRect();
         const particles = 6;
@@ -425,6 +501,34 @@ document.addEventListener('DOMContentLoaded', () => {
             window.movieUI.showToast('Welcome to CineAI! Select your mood and language to get started.', 'info', 3000);
         }
     }, 1000);
+
+    // Share dropdown functionality
+    const shareButton = document.getElementById('shareButton');
+    const shareMenu = document.getElementById('shareMenu');
+    
+    if (shareButton && shareMenu) {
+        shareButton.addEventListener('click', (e) => {
+            e.stopPropagation();
+            shareMenu.classList.toggle('active');
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!shareButton.contains(e.target) && !shareMenu.contains(e.target)) {
+                shareMenu.classList.remove('active');
+            }
+        });
+
+        // Close dropdown after selecting an option
+        const shareOptions = shareMenu.querySelectorAll('.share-option');
+        shareOptions.forEach(option => {
+            option.addEventListener('click', () => {
+                setTimeout(() => {
+                    shareMenu.classList.remove('active');
+                }, 300);
+            });
+        });
+    }
 });
 
 // Handle page visibility changes
